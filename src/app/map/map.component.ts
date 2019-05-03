@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {environment} from '../../environments/environment';
 import {DeviceService} from '../shared/device.service';
 import * as L from 'leaflet';
+import {Device} from '../shared/device-model';
 import {DeviceState} from '../shared/device-state.model';
 
 const TILES_URL = environment.tilesUrl;
@@ -14,7 +15,7 @@ const TILES_URL = environment.tilesUrl;
 export class MapComponent implements OnInit {
   // Main map component.
   map: L.Map;
-  deviceStates: Array<DeviceState>;
+  devices: Array<Device>;
 
   constructor(private deviceService: DeviceService) {
   }
@@ -28,8 +29,8 @@ export class MapComponent implements OnInit {
     }).addTo(this.map);
 
     this.deviceService.findAll().subscribe(
-      (data: Array<DeviceState>) => {
-        this.deviceStates = data;
+      (data: Array<Device>) => {
+        this.devices = data;
         this.initDevicesMarkers();
       },
       error => console.log(error)
@@ -37,13 +38,20 @@ export class MapComponent implements OnInit {
   }
 
   private initDevicesMarkers() {
-    if (this.deviceStates !== undefined) {
-      this.deviceStates.forEach(deviceState => {
+    const myIcon = L.icon({
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/images/marker-icon.png'
+    });
 
-        const myIcon = L.icon({
-          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/images/marker-icon.png'
-        });
-        L.marker([deviceState.lat, deviceState.lng], {icon: myIcon}).bindPopup(deviceState.id.toString()).addTo(this.map).openPopup();
+    if (this.devices !== undefined) {
+      this.devices.forEach(device => {
+        console.log('init marker for device: ' + device.id);
+
+        this.deviceService.findStateForDevice(device.id).subscribe(
+          (deviceState: DeviceState) => {
+            L.marker([deviceState.lat, deviceState.lng], {icon: myIcon}).bindPopup(deviceState.id.toString()).addTo(this.map).openPopup();
+          },
+          error => console.log(error)
+        );
 
         console.log('Marker added!');
       });

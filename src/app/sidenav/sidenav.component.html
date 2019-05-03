@@ -1,0 +1,20 @@
+<mat-toolbar>
+  <mat-toolbar-row>
+    <h2>DEVICES</h2>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<h2 matSubheader>Objenious</h2>
+
+<mat-selection-list>
+  <mat-list-option *ngFor="let device of devices">
+    <div class="center-vertically">
+      <mat-icon matListIcon>device_hub</mat-icon>
+      {{device.label}}
+    </div>
+  </mat-list-option>
+</mat-selection-list>
+
+<mat-divider></mat-divider>
+
+<h2 matSubheader>Baliz</h2>

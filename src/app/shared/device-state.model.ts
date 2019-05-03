@@ -1,5 +1,5 @@
 export class DeviceState {
-  id: number;
+  id: string;
   status: string;
   uplink_count: number;
   last_uplink: Date;

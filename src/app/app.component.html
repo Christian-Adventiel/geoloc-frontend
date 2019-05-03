@@ -1,3 +1,8 @@
-<div class="map-container">
-  <app-map></app-map>
-</div>
+<mat-sidenav-container class="example-container" fullscreen>
+  <mat-sidenav mode="side" opened [fixedInViewport]="true">
+    <app-sidenav></app-sidenav>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <app-map></app-map>
+  </mat-sidenav-content>
+</mat-sidenav-container>
