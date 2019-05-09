@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Device} from '../shared/device-model';
+import {ObjeniousDevice} from '../shared/objenious-device-model';
+import {BalizDevice} from '../shared/baliz-device-model';
 
 @Component({
   selector: 'app-sidenav',
@@ -8,12 +9,19 @@ import {Device} from '../shared/device-model';
 })
 export class SidenavComponent implements OnInit {
   @Output()
-  devicesUpdated = new EventEmitter<Array<Device>>();
+  objeniousDevicesUpdated = new EventEmitter<Array<ObjeniousDevice>>();
 
   @Input()
-  devices: Array<Device>;
+  objeniousDevices: Array<ObjeniousDevice>;
 
-  selectedDevices: Array<Device>;
+  @Output()
+  balizDevicesUpdated = new EventEmitter<Array<BalizDevice>>();
+
+  @Input()
+  balizDevices: Array<BalizDevice>;
+
+  selectedObjeniousDevices: Array<ObjeniousDevice>;
+  selectedBalizDevices: Array<BalizDevice>;
 
   constructor() {
   }
@@ -21,9 +29,15 @@ export class SidenavComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  onAreaListControlChanged(list) {
+  onAreaListControlObjeniousChanged(list) {
     // Update markers.
-    this.selectedDevices = list.selectedOptions.selected.map(item => item.value);
-    this.devicesUpdated.next(this.selectedDevices);
+    this.selectedObjeniousDevices = list.selectedOptions.selected.map(item => item.value);
+    this.objeniousDevicesUpdated.next(this.selectedObjeniousDevices);
+  }
+
+  onAreaListControlBalizChanged(list) {
+    // Update markers.
+    this.selectedBalizDevices = list.selectedOptions.selected.map(item => item.value);
+    this.balizDevicesUpdated.next(this.selectedBalizDevices);
   }
 }

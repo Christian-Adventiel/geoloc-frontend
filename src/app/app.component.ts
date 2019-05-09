@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {Device} from './shared/device-model';
+import {ObjeniousDevice} from './shared/objenious-device-model';
 import {DeviceService} from './shared/device.service';
+import {BalizDevice} from './shared/baliz-device-model';
 
 @Component({
   selector: 'app-root',
@@ -9,22 +10,33 @@ import {DeviceService} from './shared/device.service';
 })
 export class AppComponent implements OnInit {
   title = 'geoloc-frontend';
-  allDevices: Array<Device>;
-  selectedDevices: Array<Device>;
+  objeniousDevices: Array<ObjeniousDevice> = [];
+  balizDevices: Array<BalizDevice> = [];
+  selectedObjeniousDevices: Array<ObjeniousDevice>;
+  selectedBalizDevices: Array<BalizDevice>;
 
   constructor(private deviceService: DeviceService) {
   }
 
   ngOnInit() {
-    this.deviceService.findAll().subscribe(
-      (data: Array<Device>) => {
-        this.allDevices = data;
+    this.deviceService.findAllObjeniousDevices().subscribe(
+      (data: Array<ObjeniousDevice>) => {
+        data.forEach(objeniousDevice => this.objeniousDevices.push(objeniousDevice));
       },
       error => console.log(error)
     );
+    this.deviceService.findAllBalizDevices().subscribe(
+      (data: Array<BalizDevice>) => {
+        data.forEach(balizDevice => this.balizDevices.push(balizDevice));
+      }
+    );
   }
 
-  onDevicesUpdated(devices: Array<Device>) {
-    this.selectedDevices = devices;
+  onObjeniousDevicesUpdated(devices: Array<ObjeniousDevice>) {
+    this.selectedObjeniousDevices = devices;
+  }
+
+  onBalizDevicesUpdated(devices: Array<BalizDevice>) {
+    this.selectedBalizDevices = devices;
   }
 }

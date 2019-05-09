@@ -1,4 +1,4 @@
-export class Device {
+export class ObjeniousDevice {
   id: string;
   link: string;
   label: string;

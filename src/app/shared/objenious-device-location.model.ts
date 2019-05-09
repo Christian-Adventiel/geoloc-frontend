@@ -1,4 +1,4 @@
-export class DeviceLocation {
+export class ObjeniousDeviceLocation {
   timestamp: Date;
   latitude: number;
   longitude: number;

@@ -1,4 +1,4 @@
-export class DeviceState {
+export class ObjeniousDeviceState {
   id: string;
   status: string;
   uplink_count: number;

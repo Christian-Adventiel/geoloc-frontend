@@ -1,8 +1,8 @@
 <mat-sidenav-container class="example-container" fullscreen>
   <mat-sidenav mode="side" opened [fixedInViewport]="true">
-    <app-sidenav [devices]="allDevices" (devicesUpdated)="onDevicesUpdated($event)"></app-sidenav>
+    <app-sidenav [objeniousDevices]="objeniousDevices" (objeniousDevicesUpdated)="onObjeniousDevicesUpdated($event)" [balizDevices]="balizDevices" (balizDevicesUpdated)="onBalizDevicesUpdated($event)"></app-sidenav>
   </mat-sidenav>
   <mat-sidenav-content>
-    <app-map [devices]="selectedDevices"></app-map>
+    <app-map [objeniousDevices]="selectedObjeniousDevices" [balizDevices]="selectedBalizDevices"></app-map>
   </mat-sidenav-content>
 </mat-sidenav-container>
