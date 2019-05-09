@@ -6,12 +6,9 @@
 
 <h2 matSubheader>Objenious</h2>
 
-<mat-selection-list>
-  <mat-list-option *ngFor="let device of devices">
-    <div class="center-vertically">
-      <mat-icon matListIcon>device_hub</mat-icon>
-      {{device.label}}
-    </div>
+<mat-selection-list #list>
+  <mat-list-option *ngFor="let device of devices" [selected]="device.selected" (click)="onAreaListControlChanged(list)" [value]="device">
+    {{device.label}}
   </mat-list-option>
 </mat-selection-list>
 

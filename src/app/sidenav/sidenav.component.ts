@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {Device} from '../shared/device-model';
 import {DeviceService} from '../shared/device.service';
 
@@ -8,7 +8,11 @@ import {DeviceService} from '../shared/device.service';
   styleUrls: ['./sidenav.component.scss']
 })
 export class SidenavComponent implements OnInit {
+  @Output()
+  devicesUpdated = new EventEmitter<Array<Device>>();
+
   devices: Array<Device>;
+  selectedDevices: Array<Device>;
 
   constructor(private deviceService: DeviceService) {
   }
@@ -20,5 +24,11 @@ export class SidenavComponent implements OnInit {
       },
       error => console.log(error)
     );
+  }
+
+  onAreaListControlChanged(list) {
+    // Update markers.
+    this.selectedDevices = list.selectedOptions.selected.map(item => item.value);
+    this.devicesUpdated.next(this.selectedDevices);
   }
 }

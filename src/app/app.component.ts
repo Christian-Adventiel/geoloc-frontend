@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
+import {Device} from './shared/device-model';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'geoloc-frontend';
+  devices: Array<Device>;
+
+  onDevicesUpdated(devices: Array<Device>) {
+    this.devices = devices;
+  }
 }

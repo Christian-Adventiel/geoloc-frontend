@@ -5,4 +5,5 @@ export class Device {
   status: string;
   enabled: boolean;
   recycled: boolean;
+  selected: boolean;
 }

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {environment} from '../../environments/environment';
 import {DeviceService} from '../shared/device.service';
 import * as L from 'leaflet';
@@ -15,6 +15,8 @@ const TILES_URL = environment.tilesUrl;
 export class MapComponent implements OnInit {
   // Main map component.
   map: L.Map;
+
+  @Input()
   devices: Array<Device>;
 
   constructor(private deviceService: DeviceService) {
@@ -31,13 +33,13 @@ export class MapComponent implements OnInit {
     this.deviceService.findAll().subscribe(
       (data: Array<Device>) => {
         this.devices = data;
-        this.initDevicesMarkers();
+        this.updateDevicesMarkers();
       },
       error => console.log(error)
     );
   }
 
-  private initDevicesMarkers() {
+  private updateDevicesMarkers() {
     const myIcon = L.icon({
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/images/marker-icon.png'
     });

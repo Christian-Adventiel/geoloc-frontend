@@ -1,8 +1,8 @@
 <mat-sidenav-container class="example-container" fullscreen>
   <mat-sidenav mode="side" opened [fixedInViewport]="true">
-    <app-sidenav></app-sidenav>
+    <app-sidenav (devicesUpdated)="onDevicesUpdated($event)"></app-sidenav>
   </mat-sidenav>
   <mat-sidenav-content>
-    <app-map></app-map>
+    <app-map [devices]="devices"></app-map>
   </mat-sidenav-content>
 </mat-sidenav-container>
