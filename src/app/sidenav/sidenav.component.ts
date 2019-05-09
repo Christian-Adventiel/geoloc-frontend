@@ -1,6 +1,5 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Device} from '../shared/device-model';
-import {DeviceService} from '../shared/device.service';
 
 @Component({
   selector: 'app-sidenav',
@@ -11,19 +10,15 @@ export class SidenavComponent implements OnInit {
   @Output()
   devicesUpdated = new EventEmitter<Array<Device>>();
 
+  @Input()
   devices: Array<Device>;
+
   selectedDevices: Array<Device>;
 
-  constructor(private deviceService: DeviceService) {
+  constructor() {
   }
 
-  ngOnInit() {
-    this.deviceService.findAll().subscribe(
-      (data: Array<Device>) => {
-        this.devices = data;
-      },
-      error => console.log(error)
-    );
+  ngOnInit(): void {
   }
 
   onAreaListControlChanged(list) {

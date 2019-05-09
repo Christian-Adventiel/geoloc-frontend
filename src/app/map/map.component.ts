@@ -2,6 +2,7 @@ import {Component, Input, OnInit} from '@angular/core';
 import {environment} from '../../environments/environment';
 import {DeviceService} from '../shared/device.service';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import {Device} from '../shared/device-model';
 import {DeviceState} from '../shared/device-state.model';
 
@@ -15,9 +16,14 @@ const TILES_URL = environment.tilesUrl;
 export class MapComponent implements OnInit {
   // Main map component.
   map: L.Map;
+  _devices: Array<Device>;
+  private markers = L.markerClusterGroup();
 
   @Input()
-  devices: Array<Device>;
+  set devices(devices: Array<Device>) {
+    this._devices = devices;
+    this.updateDevicesMarkers();
+  }
 
   constructor(private deviceService: DeviceService) {
   }
@@ -30,32 +36,27 @@ export class MapComponent implements OnInit {
       maxZoom: 19
     }).addTo(this.map);
 
-    this.deviceService.findAll().subscribe(
-      (data: Array<Device>) => {
-        this.devices = data;
-        this.updateDevicesMarkers();
-      },
-      error => console.log(error)
-    );
+    this.map.addLayer(this.markers);
+
+    this.updateDevicesMarkers();
   }
 
   private updateDevicesMarkers() {
+    this.markers.clearLayers();
     const myIcon = L.icon({
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/images/marker-icon.png'
     });
 
-    if (this.devices !== undefined) {
-      this.devices.forEach(device => {
-        console.log('init marker for device: ' + device.id);
-
+    if (this._devices !== undefined) {
+      this._devices.forEach(device => {
         this.deviceService.findStateForDevice(device.id).subscribe(
           (deviceState: DeviceState) => {
-            L.marker([deviceState.lat, deviceState.lng], {icon: myIcon}).bindPopup(deviceState.id.toString()).addTo(this.map).openPopup();
+            L.marker([deviceState.lat, deviceState.lng], {icon: myIcon})
+              .bindPopup(deviceState.id.toString())
+              .addTo(this.markers).openPopup();
           },
           error => console.log(error)
         );
-
-        console.log('Marker added!');
       });
     }
   }
