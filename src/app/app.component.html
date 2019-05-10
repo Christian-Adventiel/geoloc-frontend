@@ -3,6 +3,7 @@
     <app-sidenav [objeniousDevices]="objeniousDevices" (objeniousDevicesUpdated)="onObjeniousDevicesUpdated($event)" [balizDevices]="balizDevices" (balizDevicesUpdated)="onBalizDevicesUpdated($event)"></app-sidenav>
   </mat-sidenav>
   <mat-sidenav-content>
-    <app-map [objeniousDevices]="selectedObjeniousDevices" [balizDevices]="selectedBalizDevices"></app-map>
+    <!--<app-map [devices]="selectedDevices"></app-map>-->
+    <app-exotic-charts></app-exotic-charts>
   </mat-sidenav-content>
 </mat-sidenav-container>

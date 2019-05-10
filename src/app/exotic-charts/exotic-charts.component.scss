@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.filter-container {
+  width: 250px;
+  float: left;
+}
+
+.chart {
+  clear: right;
+  padding-top: 10px;
+  margin-left: 10px;
+}
+
+/deep/ .ui-listbox {
+  width: auto;
+}
+
+/deep/ .c3 line,
+/deep/ .c3 path {
+  fill: none;
+  stroke: #000;
+}
+
+/deep/ .c3 .c3-selected-circle {
+  fill: none;
+}
+
+/deep/ .extent {
+  fill-opacity: .1;
+}
+
+/deep/ .c3-tooltip {
+  border-collapse: collapse;
+  border-spacing: 0;
+  empty-cells: show;
+  box-shadow: 7px 7px 12px -9px #777;
+  opacity: 0.9;
+}
+
+/deep/ .c3-tooltip tr {
+  border: 1px solid #CCC;
+}
+
+/deep/ .c3-tooltip th {
+  background-color: #aaa;
+  font-size: 14px;
+  padding: 2px 5px;
+  text-align: left;
+  color: #FFF;
+}
+
+/deep/ .c3-tooltip td {
+  background-color: #FFF;
+  padding: 3px 6px;
+  font-size: 13px;
+  border-left: 1px dotted #999;
+}
+
+/deep/ .c3-legend-item-tile,
+/deep/ .c3-xgrid-focus,
+/deep/ .c3-ygrid,
+/deep/ .c3-event-rect,
+/deep/ .c3-bars path {
+  shape-rendering: crispEdges;
+}
+
+
+/*-- Focus --*/
+
+/deep/ .c3-target.c3-focused {
+  opacity: 1;
+}
+
+/deep/ .c3-target.c3-focused path.c3-line,
+/deep/ .c3-target.c3-focused path.c3-step {
+  stroke-width: 2px;
+}
+
+/deep/ .c3-target.c3-defocused {
+  opacity: 0.3 !important;
+}
+
+
+/*-- Legend --*/
+
+/deep/ .c3-legend-item {
+  font-size: 12px;
+}
+
+/deep/ .c3-legend-background {
+  opacity: 0.75;
+  fill: white;
+  stroke: lightgray;
+  stroke-width: 1
+}
+
+.area {
+  fill: steelblue;
+  clip-path: url(#clip);
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
+
+.legend-box {
+  cursor: pointer;
+}
