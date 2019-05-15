@@ -22,7 +22,6 @@ export class DeviceService {
   }
 
   findStateForObjeniousDevice(deviceId: string): Observable<ObjeniousDeviceState> {
-    console.log(deviceId);
     return this.http.get<ObjeniousDeviceState>(this.devicesUrl + '/objenious/' + deviceId + '/state');
   }
 

@@ -3,3 +3,12 @@
   padding: 2px;
   height: 100%;
 }
+
+mat-toolbar.mat-toolbar {
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .3);
+  z-index: 1;
+}
+
+mat-toolbar {
+  padding: 0;
+}

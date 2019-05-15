@@ -1,1 +1,41 @@
-<div id="map"></div>
+<div>
+  <mat-sidenav-container class="example-container">
+    <mat-sidenav #sidenav mode="side">
+      <mat-toolbar>
+        <mat-toolbar-row>
+          <h2>DEVICES</h2>
+        </mat-toolbar-row>
+      </mat-toolbar>
+
+      <h2 matSubheader>Objenious</h2>
+
+      <mat-selection-list #objeniousList>
+        <mat-list-option
+          *ngFor="let device of objeniousDevices"
+          [selected]="device.selected"
+          (click)="onAreaListControlObjeniousChanged(objeniousList)"
+          [value]="device">
+          {{device.label}}
+        </mat-list-option>
+      </mat-selection-list>
+
+      <mat-divider></mat-divider>
+
+      <h2 matSubheader>Baliz</h2>
+
+      <mat-selection-list #balizList>
+        <mat-list-option
+          *ngFor="let device of balizDevices"
+          [selected]="device.selected"
+          (click)="onAreaListControlBalizChanged(balizList)"
+          [value]="device">
+          {{device.name}}
+        </mat-list-option>
+      </mat-selection-list>
+
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <div id="map"></div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
