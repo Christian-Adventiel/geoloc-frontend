@@ -1,13 +1,14 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {environment} from '../../environments/environment';
-import {DeviceService} from '../shared/device.service';
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import {ObjeniousDevice} from '../shared/objenious-device-model';
-import {ObjeniousDeviceState} from '../shared/objenious-device-state.model';
 import {BalizDevice} from '../shared/baliz-device-model';
+import {DeviceService} from '../shared/device.service';
 import {BalizDeviceData} from '../shared/baliz-device-data-model';
-import {last} from 'rxjs/operators';
+import {ObjeniousDeviceState} from '../shared/objenious-device-state.model';
+import {environment} from '../../environments/environment';
+import {MatSidenav} from '@angular/material';
+import {SidenavService} from '../shared/sidenav.service';
 
 const TILES_URL = environment.tilesUrl;
 
@@ -16,32 +17,23 @@ const TILES_URL = environment.tilesUrl;
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss']
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements AfterViewInit {
   // Main map component.
   map: L.Map;
-  _objeniousDevices: Array<ObjeniousDevice> = [];
-  _balizDevices: Array<BalizDevice> = [];
-  private objeniousMarkers = L.markerClusterGroup();
-  private balizMarkers = L.markerClusterGroup();
+  objeniousDevices: Array<ObjeniousDevice> = [];
+  balizDevices: Array<BalizDevice> = [];
+  selectedObjeniousDevices: Array<ObjeniousDevice>;
+  selectedBalizDevices: Array<BalizDevice>;
+  private objeniousMarkers;
+  private balizMarkers;
+  @ViewChild('sidenav') public sidenav: MatSidenav;
 
-  @Input()
-  set objeniousDevices(devices: Array<ObjeniousDevice>) {
-    this._objeniousDevices = devices;
-    this.objeniousMarkers.clearLayers();
-    this.updateObjeniousMarkers();
+  constructor(private deviceService: DeviceService, private sidenavService: SidenavService) {
   }
 
-  @Input()
-  set balizDevices(devices: Array<BalizDevice>) {
-    this._balizDevices = devices;
-    this.balizMarkers.clearLayers();
-    this.updateBalizMarkers();
-  }
+  ngAfterViewInit() {
+    this.sidenavService.setSidenav(this.sidenav);
 
-  constructor(private deviceService: DeviceService) {
-  }
-
-  ngOnInit() {
     this.map = L.map('map').setView([48.09842, -1.797293], 12);
 
     L.tileLayer(TILES_URL, {
@@ -49,8 +41,32 @@ export class MapComponent implements OnInit {
       maxZoom: 19
     }).addTo(this.map);
 
+    this.objeniousMarkers = L.markerClusterGroup({
+      iconCreateFunction: function (cluster) {
+        return L.divIcon({html: '' + cluster.getChildCount(), className: 'objenious-cluster', iconSize: null });
+      }
+    });
+
+    this.balizMarkers = L.markerClusterGroup({
+      iconCreateFunction: function (cluster) {
+        return L.divIcon({html: '' + cluster.getChildCount(), className: 'baliz-cluster', iconSize: null });
+      }
+    });
+
     this.map.addLayer(this.objeniousMarkers);
     this.map.addLayer(this.balizMarkers);
+
+    this.deviceService.findAllObjeniousDevices().subscribe(
+      (data: Array<ObjeniousDevice>) => {
+        data.forEach(objeniousDevice => this.objeniousDevices.push(objeniousDevice));
+      },
+      error => console.log(error)
+    );
+    this.deviceService.findAllBalizDevices().subscribe(
+      (data: Array<BalizDevice>) => {
+        data.forEach(balizDevice => this.balizDevices.push(balizDevice));
+      }
+    );
 
     this.updateDevicesMarkers();
   }
@@ -67,8 +83,8 @@ export class MapComponent implements OnInit {
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
     });
 
-    if (this._balizDevices !== undefined) {
-      this._balizDevices.forEach(device => {
+    if (this.selectedBalizDevices !== undefined) {
+      this.selectedBalizDevices.forEach(device => {
         this.deviceService.findDataForBalizDevice(device.id).subscribe(
           (deviceData: BalizDeviceData[]) => {
             const lastData = deviceData[deviceData.length - 1];
@@ -89,8 +105,8 @@ export class MapComponent implements OnInit {
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/images/marker-icon.png'
     });
 
-    if (this._objeniousDevices !== undefined) {
-      this._objeniousDevices.forEach(device => {
+    if (this.selectedObjeniousDevices !== undefined) {
+      this.selectedObjeniousDevices.forEach(device => {
         this.deviceService.findStateForObjeniousDevice(device.id).subscribe(
           (deviceState: ObjeniousDeviceState) => {
             L.marker([deviceState.lat, deviceState.lng], {icon: objeniousIcon, title: 'objeniousDevice'})
@@ -101,5 +117,19 @@ export class MapComponent implements OnInit {
         );
       });
     }
+  }
+
+  onAreaListControlObjeniousChanged(list) {
+    // Update markers.
+    this.selectedObjeniousDevices = list.selectedOptions.selected.map(item => item.value);
+    this.objeniousMarkers.clearLayers();
+    this.updateObjeniousMarkers();
+  }
+
+  onAreaListControlBalizChanged(list) {
+    // Update markers.
+    this.selectedBalizDevices = list.selectedOptions.selected.map(item => item.value);
+    this.balizMarkers.clearLayers();
+    this.updateBalizMarkers();
   }
 }

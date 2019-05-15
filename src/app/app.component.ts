@@ -1,7 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {ObjeniousDevice} from './shared/objenious-device-model';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {DeviceService} from './shared/device.service';
-import {BalizDevice} from './shared/baliz-device-model';
+import {Router} from '@angular/router';
+import {MatSidenav} from '@angular/material';
+import {SidenavService} from './shared/sidenav.service';
 
 @Component({
   selector: 'app-root',
@@ -9,34 +10,32 @@ import {BalizDevice} from './shared/baliz-device-model';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'geoloc-frontend';
-  objeniousDevices: Array<ObjeniousDevice> = [];
-  balizDevices: Array<BalizDevice> = [];
-  selectedObjeniousDevices: Array<ObjeniousDevice>;
-  selectedBalizDevices: Array<BalizDevice>;
+  title = 'IOT & traçabilité';
+  navLinks: any[];
+  activeLinkIndex = -1;
+  @ViewChild('sidenav') public sideNav: MatSidenav;
 
-  constructor(private deviceService: DeviceService) {
+  constructor(private deviceService: DeviceService, private router: Router, private sidenavService: SidenavService) {
+    this.navLinks = [
+      {
+        label: 'Map',
+        link: './map',
+        index: 0
+      }, {
+        label: 'Charts',
+        link: './charts',
+        index: 1
+      }
+    ];
   }
 
   ngOnInit() {
-    this.deviceService.findAllObjeniousDevices().subscribe(
-      (data: Array<ObjeniousDevice>) => {
-        data.forEach(objeniousDevice => this.objeniousDevices.push(objeniousDevice));
-      },
-      error => console.log(error)
-    );
-    this.deviceService.findAllBalizDevices().subscribe(
-      (data: Array<BalizDevice>) => {
-        data.forEach(balizDevice => this.balizDevices.push(balizDevice));
-      }
-    );
+    this.router.events.subscribe((res) => {
+      this.activeLinkIndex = this.navLinks.indexOf(this.navLinks.find(tab => tab.link === '.' + this.router.url));
+    });
   }
 
-  onObjeniousDevicesUpdated(devices: Array<ObjeniousDevice>) {
-    this.selectedObjeniousDevices = devices;
-  }
-
-  onBalizDevicesUpdated(devices: Array<BalizDevice>) {
-    this.selectedBalizDevices = devices;
+  toggleSide() {
+    this.sidenavService.toggle();
   }
 }

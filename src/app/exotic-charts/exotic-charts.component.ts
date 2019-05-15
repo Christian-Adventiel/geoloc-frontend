@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterContentChecked, AfterViewInit, Component} from '@angular/core';
 import * as c3 from 'c3';
 import {BalizData} from '../shared/baliz-data-model';
 import {BalizDataService} from '../shared/baliz-data.service';
@@ -8,7 +8,7 @@ import {BalizDataService} from '../shared/baliz-data.service';
   templateUrl: './exotic-charts.component.html',
   styleUrls: ['./exotic-charts.component.scss']
 })
-export class ExoticChartsComponent implements OnInit {
+export class ExoticChartsComponent implements AfterViewInit {
   chart: any;
   objJSON: BalizData[];
   varNames: string[];
@@ -18,13 +18,16 @@ export class ExoticChartsComponent implements OnInit {
   constructor(private balizDataService: BalizDataService) {
   }
 
-  ngOnInit() {
+  ngAfterViewInit(): void {
     this.varNames = ['temperature', 'humidity', 'luminosity'];
     this.balizDataService.findDataForDevice('30D1E0').subscribe((res) => {
       this.objJSON = res;
-      console.log(this.objJSON);
       this.initChart();
     });
+
+    setInterval(() => {
+      this.reload();
+    }, 5000);
   }
 
   initChart() {
@@ -58,7 +61,7 @@ export class ExoticChartsComponent implements OnInit {
       },
       point: {
         r: function (d) {
-          return 5;
+          return 3;
         },
         select: {
           r: 12
@@ -96,5 +99,14 @@ export class ExoticChartsComponent implements OnInit {
   showHideTarget() {
     this.chart.hide();
     this.chart.show(this.selectedTargets);
+  }
+
+  reload() {
+    console.log('reload chart');
+    this.balizDataService.findDataForDevice('30D1E0').subscribe((res) => {
+      this.objJSON = res;
+      this.chart.flow(res);
+      this.chart.flush();
+    });
   }
 }

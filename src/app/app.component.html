@@ -1,9 +1,18 @@
-<mat-sidenav-container class="example-container" fullscreen>
-  <mat-sidenav mode="side" opened [fixedInViewport]="true">
-    <app-sidenav [objeniousDevices]="objeniousDevices" (objeniousDevicesUpdated)="onObjeniousDevicesUpdated($event)" [balizDevices]="balizDevices" (balizDevicesUpdated)="onBalizDevicesUpdated($event)"></app-sidenav>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <!--<app-map [devices]="selectedDevices"></app-map>-->
-    <app-exotic-charts></app-exotic-charts>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<mat-toolbar color="primary">
+  <button class="hamburger mat-button" (click)="sidenavService.toggle()" mat-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>IOT et traçabilité</span>
+  <span class="example-fill-remaining-space"></span>
+</mat-toolbar>
+
+<nav mat-tab-nav-bar>
+  <a mat-tab-link
+     *ngFor="let link of navLinks"
+     [routerLink]="link.link"
+     routerLinkActive #rla="routerLinkActive"
+     [active]="rla.isActive">
+    {{link.label}}
+  </a>
+</nav>
+<router-outlet></router-outlet>
