@@ -9,8 +9,9 @@ import {DeviceService} from '../shared/device.service';
 import {BalizDeviceData} from '../shared/baliz-device-data-model';
 import {ObjeniousDeviceState} from '../shared/objenious-device-state.model';
 import {environment} from '../../environments/environment';
-import {MatSidenav} from '@angular/material';
+import {MatSidenav, MatSnackBar} from '@angular/material';
 import {SidenavService} from '../shared/sidenav.service';
+import {LatLng, LeafletMouseEvent, PathOptions} from 'leaflet';
 
 const TILES_URL = environment.tilesUrl;
 
@@ -29,11 +30,13 @@ export class MapComponent implements AfterViewInit {
   balizDevices: Array<BalizDevice> = [];
   selectedObjeniousDevices: Array<ObjeniousDevice>;
   selectedBalizDevices: Array<BalizDevice>;
+  private routeDisplayed: Boolean = false;
+  private departureMarker: L.Marker;
   private objeniousMarkers;
   private balizMarkers;
   @ViewChild('sidenav') public sidenav: MatSidenav;
 
-  constructor(private deviceService: DeviceService, private sidenavService: SidenavService) {
+  constructor(private deviceService: DeviceService, private sidenavService: SidenavService, private snackBar: MatSnackBar) {
   }
 
   ngAfterViewInit() {
@@ -110,7 +113,6 @@ export class MapComponent implements AfterViewInit {
     );
 
     this.updateDevicesMarkers();
-    this.updateDevicesRoute();
 
     // Polygon creation callback.
     this.map.on('draw:created', function (e) {
@@ -179,35 +181,106 @@ export class MapComponent implements AfterViewInit {
     }
   }
 
-  private updateDevicesRoute() {
-    if (this.routing === undefined) {
-      this.routing = L.Routing.control({
-        router: this.router,
-        lineOptions: {
-          styles: [{color: 'yellow', opacity: 1, weight: 5}]
-        },
-
-
-      }).addTo(this.map);
+  private deleteRoute() {
+    if (this.routing !== undefined) {
+      this.map.removeControl(this.routing);
+      this.removeDepartureMarker();
+      this.routing = undefined;
+      this.routeDisplayed = false;
     }
+  }
 
-    this.waypoints = [];
-
-    if (this.selectedBalizDevices !== undefined) {
-      this.selectedBalizDevices.forEach(device => {
-        this.deviceService.findDataForBalizDevice(device.id).subscribe(
-          (deviceData: BalizDeviceData[]) => {
-            const lastData = deviceData[deviceData.length - 1];
-            if (lastData !== undefined) {
-              this.waypoints.push(L.latLng(lastData.latitude, lastData.longitude));
-            }
-            console.log(this.waypoints);
-            this.routing.setWaypoints(this.waypoints);
-          },
-          error => console.log(error)
-        );
+  private generateRoute() {
+    if (this.selectedBalizDevices !== undefined && this.selectedBalizDevices.length >= 1) {
+      this.snackBar.open('Cliquez sur la carte pour sélectionner le point de départ.', 'Ok');
+      this.map.on('click', (e: LeafletMouseEvent) => {
+        if (this.departureMarker === undefined) {
+          this.departureMarker = new L.Marker([e.latlng.lat, e.latlng.lng]).addTo(this.map);
+          this.updateDevicesRoute();
+          this.snackBar.dismiss();
+        }
+      })
+    } else {
+      this.snackBar.open('Sélectionnez au moins 1 capteur.', 'Ok', {
+        duration: 3000,
       });
     }
+  }
+
+  private removeDepartureMarker() {
+    this.map.removeLayer(this.departureMarker);
+    this.departureMarker = undefined;
+  }
+
+  private updateDevicesRoute() {
+
+      if (this.routing === undefined) {
+        this.routing = L.Routing.control({
+          router: this.router,
+          lineOptions: {
+            styles: [{color: 'blue', opacity: 1, weight: 5}]
+          },
+          plan: L.Routing.plan( null , {
+            createMarker: function(i, wp) {
+              return null;
+            },
+            routeWhileDragging: false
+          }),
+        }).addTo(this.map);
+        this.waypoints = [];
+        this.waypoints.push(this.departureMarker.getLatLng());
+
+        let itemsProcessed = 0;
+
+        this.selectedBalizDevices.forEach(device => {
+          this.deviceService.findDataForBalizDevice(device.id).subscribe(
+            (deviceData: BalizDeviceData[]) => {
+              const lastData = deviceData[deviceData.length - 1];
+              if (lastData !== undefined) {
+                const latLng = L.latLng(lastData.latitude, lastData.longitude);
+                this.waypoints.push(latLng);
+                itemsProcessed++;
+                if (this.selectedBalizDevices.length === itemsProcessed) {
+                  this.routing.setWaypoints(this.reorderProperlyWaypoints(this.waypoints));
+                  this.routeDisplayed = true;
+                }
+              }
+            },
+            error => console.log(error)
+          );
+        });
+      }
+  }
+
+  reorderProperlyWaypoints(waypoints: LatLng[]) {
+    let wayPointsAndDistance = [];
+    const numberOfWayPoints = waypoints.length;
+    const waypointsCopy = Object.assign([], waypoints);
+    const start = waypoints[0];
+    const newWayPoints = [];
+    newWayPoints.push(start)
+    waypointsCopy.splice(0, 1);
+
+    let previousWayPoint = start;
+    while (newWayPoints.length !== numberOfWayPoints) {
+      // First we fill the waypoints and distance array
+      waypointsCopy.forEach( waypoint => {
+        const distance = previousWayPoint.distanceTo(waypoint);
+        wayPointsAndDistance.push({waypoint: waypoint, distance: distance});
+      });
+      // After that, we sort it by the distance, thus the first element will be the nearest waypoint
+      wayPointsAndDistance.sort(function(a, b) {return (a.distance > b.distance) ? 1 : ((b.distance > a.distance) ? -1 : 0); });
+      // We assign it, as it is the previously used way point
+      previousWayPoint = wayPointsAndDistance[0].waypoint;
+      // We push it through the new way points array
+      newWayPoints.push(previousWayPoint);
+      // We remove it from the first way points array
+      waypointsCopy.splice(waypointsCopy.indexOf(previousWayPoint), 1);
+      // We pop the array containing way points and distance in order to do the job again
+      wayPointsAndDistance = [];
+    }
+
+    return newWayPoints;
   }
 
   onAreaListControlObjeniousChanged(list) {
@@ -222,6 +295,5 @@ export class MapComponent implements AfterViewInit {
     this.selectedBalizDevices = list.selectedOptions.selected.map(item => item.value);
     this.balizMarkers.clearLayers();
     this.updateBalizMarkers();
-    this.updateDevicesRoute();
   }
 }
