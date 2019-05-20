@@ -10,6 +10,7 @@ import {ExoticChartsComponent} from './exotic-charts/exotic-charts.component';
 import {AppRoutingModule} from './app-routing.module';
 import {SidenavService} from './shared/sidenav.service';
 import {MapComponent} from './map/map.component';
+import {MapService} from './shared/map.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,7 @@ import {MapComponent} from './map/map.component';
     AppRoutingModule,
     MatListModule
   ],
-  providers: [SidenavService],
+  providers: [SidenavService, MapService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
