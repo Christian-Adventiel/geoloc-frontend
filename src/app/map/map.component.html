@@ -33,6 +33,14 @@
         </mat-list-option>
       </mat-selection-list>
 
+      <mat-divider></mat-divider>
+
+      <h2 matSubheader>Options</h2>
+
+      <mat-checkbox (change)="toggleHisto()" [checked]="histoEnabled" >
+        <label>Historique</label>
+      </mat-checkbox>
+
     </mat-sidenav>
     <mat-sidenav-content>
       <div id="map"></div>
