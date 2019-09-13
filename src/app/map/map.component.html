@@ -35,6 +35,12 @@
 
       <mat-divider></mat-divider>
 
+      <h2 matSubheader>Options</h2>
+
+      <mat-checkbox (change)="toggleHisto()" [checked]="histoEnabled" >
+        <label>Historique</label>
+      </mat-checkbox>
+
       <h2 matSubheader></h2>
       <div align="center">
         <button *ngIf="!routeDisplayed" mat-raised-button (click)="generateRoute()">
@@ -44,8 +50,6 @@
           Effacer itinéraire
         </button>
       </div>
-
-
     </mat-sidenav>
     <mat-sidenav-content>
       <div id="map"></div>

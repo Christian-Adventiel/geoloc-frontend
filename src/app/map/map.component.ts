@@ -1,5 +1,6 @@
 import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import * as L from 'leaflet';
+import {LatLng, LeafletMouseEvent} from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet-draw';
 import 'leaflet-routing-machine';
@@ -11,7 +12,7 @@ import {ObjeniousDeviceState} from '../shared/objenious-device-state.model';
 import {environment} from '../../environments/environment';
 import {MatSidenav, MatSnackBar} from '@angular/material';
 import {SidenavService} from '../shared/sidenav.service';
-import {LatLng, LeafletMouseEvent, PathOptions} from 'leaflet';
+import {ObjeniousDeviceLocation} from '../shared/objenious-device-location.model';
 
 const TILES_URL = environment.tilesUrl;
 
@@ -32,6 +33,8 @@ export class MapComponent implements AfterViewInit {
   selectedBalizDevices: Array<BalizDevice>;
   private routeDisplayed: Boolean = false;
   private departureMarker: L.Marker;
+  histoEnabled: boolean;
+  polyline: L.Polyline;
   private objeniousMarkers;
   private balizMarkers;
   @ViewChild('sidenav') public sidenav: MatSidenav;
@@ -125,7 +128,7 @@ export class MapComponent implements AfterViewInit {
 
         const popup = L.popup()
           .setLatLng(polygonCoordinates)
-          .setContent('<span><b>Nombre de devices</b></span><br/><input id="shapeName" type="text" value="3"/><br/><br/><span><b>Temps passé dans la zone<b/></span><br/><textarea id="shapeDesc" cols="25" rows="5">12 minutes</textarea><br/><br/>');
+          .setContent('<span><b>Nombre de devices</b></span><br/><input id="shapeName" type="text" value="2"/><br/><br/><span><b>Temps passé dans la zone<b/></span><br/><textarea id="shapeDesc" cols="25" rows="5">8 heures et 12 minutes</textarea><br/><br/>');
         layer.bindPopup(popup);
 
         polygonsLayer.addLayer(layer);
@@ -199,7 +202,7 @@ export class MapComponent implements AfterViewInit {
           this.updateDevicesRoute();
           this.snackBar.dismiss();
         }
-      })
+      });
     } else {
       this.snackBar.open('Sélectionnez au moins 1 capteur.', 'Ok', {
         duration: 3000,
@@ -214,42 +217,42 @@ export class MapComponent implements AfterViewInit {
 
   private updateDevicesRoute() {
 
-      if (this.routing === undefined) {
-        this.routing = L.Routing.control({
-          router: this.router,
-          lineOptions: {
-            styles: [{color: 'blue', opacity: 1, weight: 5}]
+    if (this.routing === undefined) {
+      this.routing = L.Routing.control({
+        router: this.router,
+        lineOptions: {
+          styles: [{color: 'blue', opacity: 1, weight: 5}]
+        },
+        plan: L.Routing.plan(null, {
+          createMarker: function (i, wp) {
+            return null;
           },
-          plan: L.Routing.plan( null , {
-            createMarker: function(i, wp) {
-              return null;
-            },
-            routeWhileDragging: false
-          }),
-        }).addTo(this.map);
-        this.waypoints = [];
-        this.waypoints.push(this.departureMarker.getLatLng());
+          routeWhileDragging: false
+        }),
+      }).addTo(this.map);
+      this.waypoints = [];
+      this.waypoints.push(this.departureMarker.getLatLng());
 
-        let itemsProcessed = 0;
+      let itemsProcessed = 0;
 
-        this.selectedBalizDevices.forEach(device => {
-          this.deviceService.findDataForBalizDevice(device.id).subscribe(
-            (deviceData: BalizDeviceData[]) => {
-              const lastData = deviceData[deviceData.length - 1];
-              if (lastData !== undefined) {
-                const latLng = L.latLng(lastData.latitude, lastData.longitude);
-                this.waypoints.push(latLng);
-                itemsProcessed++;
-                if (this.selectedBalizDevices.length === itemsProcessed) {
-                  this.routing.setWaypoints(this.reorderProperlyWaypoints(this.waypoints));
-                  this.routeDisplayed = true;
-                }
+      this.selectedBalizDevices.forEach(device => {
+        this.deviceService.findDataForBalizDevice(device.id).subscribe(
+          (deviceData: BalizDeviceData[]) => {
+            const lastData = deviceData[deviceData.length - 1];
+            if (lastData !== undefined) {
+              const latLng = L.latLng(lastData.latitude, lastData.longitude);
+              this.waypoints.push(latLng);
+              itemsProcessed++;
+              if (this.selectedBalizDevices.length === itemsProcessed) {
+                this.routing.setWaypoints(this.reorderProperlyWaypoints(this.waypoints));
+                this.routeDisplayed = true;
               }
-            },
-            error => console.log(error)
-          );
-        });
-      }
+            }
+          },
+          error => console.log(error)
+        );
+      });
+    }
   }
 
   reorderProperlyWaypoints(waypoints: LatLng[]) {
@@ -258,18 +261,20 @@ export class MapComponent implements AfterViewInit {
     const waypointsCopy = Object.assign([], waypoints);
     const start = waypoints[0];
     const newWayPoints = [];
-    newWayPoints.push(start)
+    newWayPoints.push(start);
     waypointsCopy.splice(0, 1);
 
     let previousWayPoint = start;
     while (newWayPoints.length !== numberOfWayPoints) {
       // First we fill the waypoints and distance array
-      waypointsCopy.forEach( waypoint => {
+      waypointsCopy.forEach(waypoint => {
         const distance = previousWayPoint.distanceTo(waypoint);
         wayPointsAndDistance.push({waypoint: waypoint, distance: distance});
       });
       // After that, we sort it by the distance, thus the first element will be the nearest waypoint
-      wayPointsAndDistance.sort(function(a, b) {return (a.distance > b.distance) ? 1 : ((b.distance > a.distance) ? -1 : 0); });
+      wayPointsAndDistance.sort(function (a, b) {
+        return (a.distance > b.distance) ? 1 : ((b.distance > a.distance) ? -1 : 0);
+      });
       // We assign it, as it is the previously used way point
       previousWayPoint = wayPointsAndDistance[0].waypoint;
       // We push it through the new way points array
@@ -295,5 +300,31 @@ export class MapComponent implements AfterViewInit {
     this.selectedBalizDevices = list.selectedOptions.selected.map(item => item.value);
     this.balizMarkers.clearLayers();
     this.updateBalizMarkers();
+  }
+
+  toggleHisto() {
+    this.histoEnabled = !this.histoEnabled;
+
+    if (!this.histoEnabled) {
+      this.polyline.remove();
+    } else {
+      this.selectedObjeniousDevices.forEach(device => {
+        this.deviceService.findAllLocationsForObjeniousDevice(device.id).subscribe(
+          (locations: Array<ObjeniousDeviceLocation>) => {
+            const pointList = [];
+            locations.forEach(location => {
+              const point = new L.LatLng(location.latitude, location.longitude);
+              pointList.push(point);
+            });
+            this.polyline = new L.Polyline(pointList, {
+              color: 'red',
+              weight: 3,
+              opacity: 0.5,
+              smoothFactor: 1
+            });
+            this.polyline.addTo(this.map);
+          });
+      });
+    }
   }
 }
